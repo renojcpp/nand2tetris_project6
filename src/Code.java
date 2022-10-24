@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Code {
     private static Map<String, String> compMnemonic = Map.ofEntries(
@@ -55,6 +56,15 @@ public class Code {
             Map.entry("JMP", "111")
     );
 
+    private static Set<String> aBits = Set.of("M", "!M", "-M", "M+1", "M-1", "D+M", "D-M", "M-D", "D&M", "D|M");
+
+    public static String aBit(String mnemonic) {
+        if (aBits.contains(mnemonic)) {
+            return "1";
+        }
+
+        return "0";
+    }
     public static String dest(String mnemonic) {
         return destMnemonic.get(mnemonic);
     }

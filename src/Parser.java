@@ -27,14 +27,10 @@ public class Parser {
             System.err.println("No such file " + filename);
         }
 
-        index = -1;
+        index = 0;
     }
 
     private String currentInstruction() {
-        if (index < 0) {
-            return "";
-        }
-
         return instructions[index];
     }
     private boolean hasMoreLines() {
@@ -42,13 +38,11 @@ public class Parser {
     }
 
     private void advance() {
-        if (hasMoreLines()) {
-            index++;
-        }
+        index++;
     }
 
     private void resetRead() {
-        index = -1;
+        index = 0;
     }
     private InstructionType instructionType() {
         final String instruction = currentInstruction();
@@ -114,7 +108,7 @@ public class Parser {
 
     public void write() {
         int extIndex = filename.lastIndexOf(".");
-        String outname = extIndex == -1 ? filename + ".hack" : filename.substring(0, extIndex);
+        String outname = extIndex == -1 ? filename + ".hack" : filename.substring(0, extIndex) + ".hack";
 
         PrintWriter writer;
         try {
@@ -124,7 +118,6 @@ public class Parser {
             // first pass
             String sym;
             while (hasMoreLines()) {
-                advance();
                 switch (instructionType()) {
                     case C_INSTRUCTION, A_INSTRUCTION -> ++lineNumber;
                     case L_INSTRUCTION -> {
@@ -132,9 +125,10 @@ public class Parser {
                         table.addEntry(sym, lineNumber + 1);
                     }
                 }
+
+                advance();
             }
 
-            lineNumber = 0;
             resetRead();
 
             // second pass
@@ -147,13 +141,24 @@ public class Parser {
                             table.addEntry(sym, VARIABLE_START + VARIABLE_CURRENT);
                             ++VARIABLE_CURRENT;
                         }
-                        writer.write("@"+table.getAddress(sym));
+                        int n = table.getAddress(sym);
+                        String ns = Integer.toBinaryString(n);
+                        int padLength = 15 - ns.length();
+                        writer.write("0" + "0".repeat(padLength) + ns + "\n");
                     }
                     case C_INSTRUCTION -> {
+                        String d = dest();
+                        String c = comp();
+                        String j = jump();
 
+                        writer.write("111"+Code.aBit(c)+Code.comp(c)+Code.dest(d)+Code.jump(j) + "\n");
                     }
                 }
+
+                advance();
             }
+
+            writer.close();
 
         } catch (IOException e) {
             System.err.println(e.getMessage());
