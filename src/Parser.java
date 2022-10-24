@@ -7,6 +7,30 @@ public class Parser {
     private final int VARIABLE_START = 16;
     private int VARIABLE_CURRENT = 0;
     private String filename;
+
+    private boolean isInteger(String str) {
+        if (str == null) {
+            return false;
+        }
+        int length = str.length();
+        if (length == 0) {
+            return false;
+        }
+        int i = 0;
+        if (str.charAt(0) == '-') {
+            if (length == 1) {
+                return false;
+            }
+            i = 1;
+        }
+        for (; i < length; i++) {
+            char c = str.charAt(i);
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+        return true;
+    }
     private boolean isComment(String src) {
         return src.startsWith("//");
     }
@@ -19,8 +43,8 @@ public class Parser {
         try {
             FileReader fr = new FileReader(filename);
             BufferedReader reader = new BufferedReader(fr);
-            instructions = reader.lines().map(String::trim)
-                    .filter(s -> isComment(s) || isEmptyLine(s))
+            instructions = reader.lines().map(String::trim).map(s -> s.replaceAll("\\s+", " ")).map(s -> s.split(" ")[0])
+                    .filter(s -> !isComment(s) && !isEmptyLine(s))
                     .toArray(String[]::new);
             this.filename = filename;
         } catch (FileNotFoundException e) {
@@ -122,7 +146,7 @@ public class Parser {
                     case C_INSTRUCTION, A_INSTRUCTION -> ++lineNumber;
                     case L_INSTRUCTION -> {
                         sym = symbol();
-                        table.addEntry(sym, lineNumber + 1);
+                        table.addEntry(sym, lineNumber);
                     }
                 }
 
@@ -133,15 +157,20 @@ public class Parser {
 
             // second pass
             while (hasMoreLines()) {
-                advance();
                 switch (instructionType()) {
                     case A_INSTRUCTION -> {
                         sym = symbol();
-                        if (!table.contains(sym)) {
-                            table.addEntry(sym, VARIABLE_START + VARIABLE_CURRENT);
-                            ++VARIABLE_CURRENT;
+                        int n;
+                        if (isInteger(sym)) {
+                            n = Integer.parseInt(sym);
+                        } else {
+                            if (!table.contains(sym)) {
+                                table.addEntry(sym, VARIABLE_START + VARIABLE_CURRENT);
+                                ++VARIABLE_CURRENT;
+                            }
+                            n = table.getAddress(sym);
                         }
-                        int n = table.getAddress(sym);
+
                         String ns = Integer.toBinaryString(n);
                         int padLength = 15 - ns.length();
                         writer.write("0" + "0".repeat(padLength) + ns + "\n");

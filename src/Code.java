@@ -38,11 +38,11 @@ public class Code {
             Map.entry("", "000"),
             Map.entry("M", "001"),
             Map.entry("D", "010"),
-            Map.entry("DM", "011"),
+            Map.entry("MD", "011"),
             Map.entry("A", "100"),
             Map.entry("AM", "101"),
             Map.entry("AD", "110"),
-            Map.entry("ADM", "111")
+            Map.entry("AMD", "111")
     );
 
     private static Map<String, String> jumpMnemonic = Map.ofEntries(

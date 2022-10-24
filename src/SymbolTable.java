@@ -1,10 +1,11 @@
+import java.util.HashMap;
 import java.util.Map;
 
 public class SymbolTable {
-    private Map<String, Integer> table;
+    private HashMap<String, Integer> table;
 
     public SymbolTable() {
-        table = Map.ofEntries(
+        table = new HashMap<>(Map.ofEntries(
                 Map.entry("R0", 0),
                 Map.entry("R1", 1),
                 Map.entry("R2", 2),
@@ -30,7 +31,7 @@ public class SymbolTable {
 
                 Map.entry("SCREEN", 16384),
                 Map.entry("KBD", 24576)
-        );
+        ));
     }
 
     public void addEntry(String symbol, int address) {
